@@ -10,19 +10,26 @@ class MySqlBackupS3{
     private $backupLogs = array();
 
     public function __construct() {
-        $this->env = parse_ini_file('.env');
-        $this->env["MYSQL_DATABASES"] = explode(",",$this->env["MYSQL_DATABASES"]);
+        $this->fillENV();
+
         ini_set('date.timezone', $this->env["TIME_ZONE"]);
+        set_time_limit(0);
 
         $this->backupLogs = array();
         $this->initS3();
-
         $this->checkDBConnection();
         $this->makeDBsBackup();
         $this->putDBsBackupToS3();
+        $this->removeOldBackups();
 
-        $this->getAllS3Objects();
+    }
 
+    private function fillENV(){
+        $this->env = $_SERVER;
+        if (file_exists('.env')) {
+            $this->env = array_merge(parse_ini_file('.env'), $this->env);
+        }
+        $this->env["MYSQL_DATABASES"] = explode(",",$this->env["MYSQL_DATABASES"]);
     }
 
     private function putDBsBackupToS3(){
@@ -90,6 +97,24 @@ class MySqlBackupS3{
         echo $msg . "<br />";
     }
 
+    private function removeOldBackups(){
+        $max_count = (int)$this->env["AWS_MAX_BACKUP_COUNT_FOR_EACH_DB"];
+        foreach ($this->env["MYSQL_DATABASES"] as $dbname) {
+            $fileList = $this->getAllS3Objects($dbname);
+            $removeCandidate = array();
+            if (sizeof($fileList) > $max_count) {
+                for ($i = 0; $i < (sizeof($fileList) - $max_count); $i++) $removeCandidate[] = $fileList[$i];
+            }
+            //print_r($removeCandidate);
+            $removeCount = 0;
+            foreach ($removeCandidate as $removeItem) {
+                $this->removeObjectFromS3($removeItem);
+                $removeCount++;
+            }
+            $this->printLog("<b>" . $removeCount . "</b> items was removed from <b>" . $dbname . "</b>");
+        }
+    }
+
     private function initS3()
     {
         if (!$this->s3) {
@@ -123,14 +148,13 @@ class MySqlBackupS3{
         return $bucketsList;
     }
 
-    private function getAllS3Objects(){
+    private function getAllS3Objects($dbname){
         $objectList = array();
         try {
-            $objectsListResponse = $this->s3->listObjects(['Bucket' => $this->env["AWS_Bucket"]]);
+            $objectsListResponse = $this->s3->listObjects(array('Bucket' => $this->env["AWS_Bucket"], 'Prefix' => $this->env["AWS_BACKUP_DIRECTORY"] . 'dbs/' . $dbname . '/'));
             $objects = $objectsListResponse['Contents'] ?? [];
             foreach ($objects as $object) {
-                echo $object['Key'] . " " . $object['Size'] . " " . $object['LastModified'] . " <br />";
-                //echo "<pre>";print_r($object);echo "</pre>";
+                $objectList[] = $object['Key'];
             }
         } catch (S3Exception $e) {
             $this->printLog($e->getMessage());
@@ -147,6 +171,16 @@ class MySqlBackupS3{
             ]);
         } catch (S3Exception $e) {
             $this->printLog($e->getMessage());
+        }
+    }
+
+    private function removeObjectFromS3($key){
+        try {
+            $object = $this->s3->deleteObject([
+                'Bucket' => $this->env["AWS_Bucket"],
+                'Key' => $key]);
+        } catch (AwsException $e) {
+            $this->printLog( $e->getMessage());
         }
     }
 

@@ -5,8 +5,6 @@ COPY ./public/ /var/www/html/
 USER root
 RUN apk update && \
     apk add --no-cache php81-mysqli && \
-    apk add --no-cache php81-xml && \
     apk add --no-cache php81-simplexml && \
-    apk add --no-cache php81-curl && \
     apk add --no-cache mysql-client
 USER nobody

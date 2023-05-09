@@ -6,12 +6,12 @@ services:
     container_name: php-mysql-backup-s3
     restart: always
     ports:
-      - "8080:8080"
+      - "8040:8080"
     networks:
       - pmbnetwork
     volumes:
       - type: 'bind'
-        source: './code/'
+        source: './public/'
         target: '/var/www/html/'
 
 

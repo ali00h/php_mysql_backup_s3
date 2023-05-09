@@ -1,0 +1,20 @@
+version: "3"
+services:
+  php:
+    build: .
+    image: "ali00h/php_mysql_backup_s3"
+    container_name: php-mysql-backup-s3
+    restart: always
+    ports:
+      - "8080:8080"
+    networks:
+      - pmbnetwork
+    volumes:
+      - type: 'bind'
+        source: './code/'
+        target: '/var/www/html/'
+
+
+networks:
+  pmbnetwork:
+    driver: bridge

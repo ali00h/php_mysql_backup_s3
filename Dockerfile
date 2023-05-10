@@ -1,6 +1,12 @@
-FROM docker.arvancloud.ir/trafex/php-nginx:3.0.0
-COPY nginx/default.conf /etc/nginx/conf.d/server.conf
+FROM composer:2.5 AS builder
 COPY ./public/ /var/www/html/
+WORKDIR /var/www/html/
+RUN composer install
+
+FROM trafex/php-nginx:3.0.0
+
+COPY nginx/default.conf /etc/nginx/conf.d/server.conf
+COPY --from=builder /var/www/html/ /var/www/html/
 
 USER root
 RUN apk update && \
@@ -8,3 +14,4 @@ RUN apk update && \
     apk add --no-cache php81-simplexml && \
     apk add --no-cache mysql-client
 USER nobody
+

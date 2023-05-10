@@ -9,10 +9,10 @@ services:
       - "8040:8080"
     networks:
       - pmbnetwork
-    volumes:
-      - type: 'bind'
-        source: './public/'
-        target: '/var/www/html/'
+      #    volumes:
+        #      - type: 'bind'
+        #        source: './public/'
+#        target: '/var/www/html/'
 
 
 networks:

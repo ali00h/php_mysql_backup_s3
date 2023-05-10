@@ -11,9 +11,12 @@ class MySqlBackupS3{
 
     public function __construct() {
         $this->fillENV();
+        $this->checkSecretKey();
 
         ini_set('date.timezone', $this->env["TIME_ZONE"]);
         set_time_limit(0);
+
+        $this->makeDir($this->tempDir);
 
         $this->backupLogs = array();
         $this->initS3();
@@ -30,6 +33,15 @@ class MySqlBackupS3{
             $this->env = array_merge(parse_ini_file('.env'), $this->env);
         }
         $this->env["MYSQL_DATABASES"] = explode(",",$this->env["MYSQL_DATABASES"]);
+    }
+
+    private function checkSecretKey(){
+        if(isset($this->env["BACKUP_URL_SecretKey"]) && !empty($this->env["BACKUP_URL_SecretKey"])){
+            if(!isset($_GET['sk']) || $this->env["BACKUP_URL_SecretKey"] != $_GET['sk']) {
+                $this->printLog("Permission Error!");
+                exit();
+            }
+        }
     }
 
     private function putDBsBackupToS3(){
@@ -186,5 +198,10 @@ class MySqlBackupS3{
 
     private function getS3KeyPath($dbname,$filename){
         return $this->env["AWS_BACKUP_DIRECTORY"] . 'dbs/' . $dbname . '/' . $filename;
+    }
+
+    private function makeDir($path)
+    {
+        return is_dir($path) || mkdir($path);
     }
 }

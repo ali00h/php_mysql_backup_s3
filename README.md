@@ -1,5 +1,5 @@
 # PHP Mysql Backup S3
-This is a simple program in php8 language to take backup from mysql or mariadb, which has the capability of running as a docker image.
+This is a webbase backup program developed by php8 to take backup from Mysql or Mariadb, which has the capability of running as a docker image.
 The backups taken are stored in Amazon's S3 storage, and the old backups are deleted from it at the same time.
 
 ## Environment Variables
@@ -36,6 +36,12 @@ BACKUP_URL_SecretKey=
 | `TIME_ZONE` | Your time zone for creating backup file name. |
 | `BACKUP_URL_SecretKey` | **(Optional)** If this variable is not empty, you should call `backup.php?sk=<SecretKey>` to run backups. |
 
+## Usage
+Just call this URL or add this URL to your cronjobs:
+```
+youdomain.com/backup.php?sk=<SecretKey>
+```
+
 ## Docker
 Create .env file with environment variables. and run this command:
 ```
@@ -52,7 +58,7 @@ docker run -d -p 8040:8080 ali00h/php_mysql_backup_s3
 docker-compose up -d --build
 ```
 
-3- Call `http://localhost:8040/backup.php` to execute backup.
+3- Call `youdomain.com/backup.php?sk=<SecretKey>` to execute backup.
 
 ## Manual Install
 1- Rename `.env.example` to `.env` and fill it with appropriate values.

@@ -209,10 +209,10 @@ class MySqlBackupS3{
     }
 
     public function startSyncDirectory($sourceDir,$s3Dir,$extension){
-        if (!str_ends_with($sourceDir, '/'))
+        if (!$this->endsWith($sourceDir, '/'))
             $sourceDir = $sourceDir . '/';
 
-        if (!str_ends_with($s3Dir, '/'))
+        if (!$this->endsWith($s3Dir, '/'))
             $s3Dir = $s3Dir . '/';
 
 
@@ -263,5 +263,16 @@ class MySqlBackupS3{
         }
 
 
+    }
+
+    public function endsWith($haystack, $needle)
+    {
+        $length = mb_strlen($needle);
+        if(!$length)
+        {
+            return true;
+        }
+
+        return mb_substr($haystack, -$length) === $needle;
     }
 }

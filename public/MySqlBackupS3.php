@@ -208,7 +208,7 @@ class MySqlBackupS3{
         return is_dir($path) || mkdir($path);
     }
 
-    public function startSyncDirectory($sourceDir,$s3Dir,$extension){
+    public function startSyncDirectory($sourceDir,$s3Dir,$extension,$max_file_count = 0){
         if (!$this->endsWith($sourceDir, '/'))
             $sourceDir = $sourceDir . '/';
 
@@ -219,6 +219,13 @@ class MySqlBackupS3{
         $glob_path = $sourceDir . '*.' . $extension;
 
         $files = glob($glob_path);
+        if($max_file_count > 0) {
+            usort($files, function ($a, $b) {
+                return filemtime($b) - filemtime($a);
+            });
+            $files = array_slice($files,0, $max_file_count);
+        }
+
         $files_in_local = array();
         foreach($files as $file){
             $files_in_local[] = basename($file);

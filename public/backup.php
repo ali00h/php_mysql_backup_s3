@@ -6,4 +6,4 @@ error_reporting(E_ALL);
 
 require __DIR__ . '/MySqlBackupS3.php';
 $backupInstance = new MySqlBackupS3();
-
+$backupInstance->startDBBackup();

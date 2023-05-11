@@ -17,15 +17,18 @@ class MySqlBackupS3{
         set_time_limit(0);
 
         $this->makeDir($this->tempDir);
+    }
 
+    public function startDBBackup(){
         $this->backupLogs = array();
         $this->initS3();
         $this->checkDBConnection();
         $this->makeDBsBackup();
         $this->putDBsBackupToS3();
         $this->removeOldBackups();
-
     }
+
+
 
     private function fillENV(){
         $this->env = $_SERVER;
@@ -112,7 +115,7 @@ class MySqlBackupS3{
     private function removeOldBackups(){
         $max_count = (int)$this->env["AWS_MAX_BACKUP_COUNT_FOR_EACH_DB"];
         foreach ($this->env["MYSQL_DATABASES"] as $dbname) {
-            $fileList = $this->getAllS3Objects($dbname);
+            $fileList = $this->getAllS3Objects($this->env["AWS_BACKUP_DIRECTORY"] . 'dbs/' . $dbname . '/');
             $removeCandidate = array();
             if (sizeof($fileList) > $max_count) {
                 for ($i = 0; $i < (sizeof($fileList) - $max_count); $i++) $removeCandidate[] = $fileList[$i];
@@ -160,10 +163,10 @@ class MySqlBackupS3{
         return $bucketsList;
     }
 
-    private function getAllS3Objects($dbname){
+    private function getAllS3Objects($dirInS3){
         $objectList = array();
         try {
-            $objectsListResponse = $this->s3->listObjects(array('Bucket' => $this->env["AWS_Bucket"], 'Prefix' => $this->env["AWS_BACKUP_DIRECTORY"] . 'dbs/' . $dbname . '/'));
+            $objectsListResponse = $this->s3->listObjects(array('Bucket' => $this->env["AWS_Bucket"], 'Prefix' => $dirInS3));
             $objects = $objectsListResponse['Contents'] ?? [];
             foreach ($objects as $object) {
                 $objectList[] = $object['Key'];
@@ -203,5 +206,62 @@ class MySqlBackupS3{
     private function makeDir($path)
     {
         return is_dir($path) || mkdir($path);
+    }
+
+    public function startSyncDirectory($sourceDir,$s3Dir,$extension){
+        if (!str_ends_with($sourceDir, '/'))
+            $sourceDir = $sourceDir . '/';
+
+        if (!str_ends_with($s3Dir, '/'))
+            $s3Dir = $s3Dir . '/';
+
+
+        $glob_path = $sourceDir . '*.' . $extension;
+
+        $files = glob($glob_path);
+        $files_in_local = array();
+        foreach($files as $file){
+            $files_in_local[] = basename($file);
+        }
+
+        $this->initS3();
+
+        $objects_in_s3 = $this->getAllS3Objects($s3Dir);
+        $files_in_s3 = array();
+        foreach($objects_in_s3 as $obj){
+            if(pathinfo($obj, PATHINFO_EXTENSION) == $extension)
+                $files_in_s3[] = basename($obj);
+        }
+
+        $only_in_local = array_diff($files_in_local,$files_in_s3);
+        $only_in_s3 = array_diff($files_in_s3,$files_in_local);
+
+        /*
+        $this->printLog("local:");
+        print_r($files_in_local);
+        $this->printLog("s3:");
+        print_r($files_in_s3);
+        $this->printLog("only_in_local:");
+        print_r($only_in_local);
+        $this->printLog("only_in_s3:");
+        print_r($only_in_s3);
+        */
+
+
+        //upload $only_in_local
+        $this->printLog(sizeof($only_in_local) . ' items must be uploaded!');
+        foreach ($only_in_local as $item_local) {
+            $this->putInS3($sourceDir . $item_local,$s3Dir . $item_local);
+            $this->printLog('<b>' . $sourceDir . $item_local . '</b> was uploaded to <b>' . $s3Dir . $item_local . '</b>');
+        }
+
+        //remove from s3 $only_in_s3
+        $this->printLog(sizeof($only_in_s3) . ' items must be removed!');
+        foreach ($only_in_s3 as $item_s3) {
+            $this->removeObjectFromS3($s3Dir . $item_s3);
+            $this->printLog('<b>' . $s3Dir . $item_s3 . '</b> removed from s3');
+        }
+
+
     }
 }

@@ -10,6 +10,7 @@ COPY --from=builder /var/www/html/ /var/www/html/
 
 USER root
 RUN apk update && \
+    apk add --update busybox-suid && \
     apk add --no-cache php81-mysqli && \
     apk add --no-cache php81-simplexml && \
     apk add --no-cache mysql-client

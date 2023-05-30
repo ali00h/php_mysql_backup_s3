@@ -4,11 +4,11 @@ WORKDIR /var/www/html/
 RUN composer install
 
 FROM trafex/php-nginx:3.0.0
-USER root
+
 COPY nginx/default.conf /etc/nginx/conf.d/server.conf
 COPY --from=builder /var/www/html/ /var/www/html/
 
-
+USER root
 RUN apk update && \
     apk add --update busybox-openrc && \
     apk add --update busybox-suid && \
@@ -18,3 +18,4 @@ RUN apk update && \
 
 RUN crontab -l | { cat; echo "* * * * * php /var/www/html/runJob.php > /dev/null 2>&1"; } | crontab -    
 
+USER nobody

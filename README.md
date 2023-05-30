@@ -18,6 +18,7 @@ AWS_BACKUP_DIRECTORY=dbbackup/mysql/
 AWS_MAX_BACKUP_COUNT_FOR_EACH_DB=30
 TIME_ZONE=America/LosAngeles
 BACKUP_URL_SecretKey=
+CRON_URL_LIST=0 1 * * * https://example-files.online-convert.com/document/txt/example.txt
 ```
 | ENV | Description |
 | --- | --- |
@@ -35,6 +36,7 @@ BACKUP_URL_SecretKey=
 | `AWS_MAX_BACKUP_COUNT_FOR_EACH_DB` | Maximum number of backups for each databases. New backup would be replaced with oldest backup. |
 | `TIME_ZONE` | Your time zone for creating backup file name. |
 | `BACKUP_URL_SecretKey` | **(Optional)** If this variable is not empty, you should call `backup.php?sk=<SecretKey>` to run backups. |
+| `CRON_URL_LIST` | **(Optional)** If this variable is not empty, you can define **cronjob** for fetching a url. You can define multiple **cronjob** by `,` |
 
 ## DockerHub
 ```
@@ -46,6 +48,19 @@ Just call this URL or add this URL to your cronjobs:
 ```
 youdomain.com/backup.php?sk=<SecretKey>
 ```
+
+### Cron Job
+If you want to schedule one or more URL calls, you can define them in `CRON_URL_LIST` variable in Environment Variables. For example:
+```
+30 1 * * * https://example-files.online-convert.com/document/txt/example.txt
+```
+that's mean everyday At 01:30, that url will be called. 
+
+If you want to see last job log, use this:
+```
+youdomain.com/?sk=<SecretKey>
+```
+
 
 ## Docker
 Create .env file with environment variables. and run this command:

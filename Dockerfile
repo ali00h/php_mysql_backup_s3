@@ -16,3 +16,6 @@ RUN apk update && \
     apk add --no-cache mysql-client
 USER nobody
 
+RUN crontab -l | { cat; echo "* * * * * php /var/www/html/runJob.php > /dev/null 2>&1"; } | crontab -
+
+CMD cron

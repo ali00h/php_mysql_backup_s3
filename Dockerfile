@@ -10,12 +10,12 @@ COPY --from=builder /var/www/html/ /var/www/html/
 
 USER root
 RUN apk update && \
-    apk add --no-cache openrc && \
     apk add --update busybox-openrc && \
     apk add --update busybox-suid && \
     apk add --no-cache php81-mysqli && \
     apk add --no-cache php81-simplexml && \
     apk add --no-cache mysql-client
 
+RUN rc-service crond start && rc-update add crond
 RUN crontab -l | { cat; echo "* * * * * php /var/www/html/runJob.php > /dev/null 2>&1"; } | crontab -    
 USER nobody

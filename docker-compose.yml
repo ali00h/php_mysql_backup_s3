@@ -8,7 +8,21 @@ services:
     ports:
       - "8040:8080"
     environment:
-     - CRON_URL_LIST=* * * * * https://example-files.online-convert.com/document/txt/example.txt   
+      - MYSQL_USERNAME=root
+      - MYSQL_PASSWORD=Pm123456
+      - MYSQL_DATABASES=test_db
+      - MYSQL_HOST=host.docker.internal
+      - MYSQL_PORT=3306
+      - AWS_AccessKey=
+      - AWS_SecretKey=
+      - AWS_Bucket=
+      - AWS_Endpoint=
+      - AWS_Region=
+      - AWS_BACKUP_DIRECTORY=dbbackup/mysql/
+      - AWS_MAX_BACKUP_COUNT_FOR_EACH_DB=30
+      - TIME_ZONE=Asia/Tehran
+      - BACKUP_URL_SecretKey=123
+      - CRON_URL_LIST=* * * * * https://example-files.online-convert.com/document/txt/example.txt
     networks:
       - pmbnetwork
 

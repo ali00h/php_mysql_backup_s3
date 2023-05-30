@@ -16,6 +16,6 @@ RUN apk update && \
     apk add --no-cache php81-simplexml && \
     apk add --no-cache mysql-client
 
-RUN crontab -l | { cat; echo "* * * * * php /var/www/html/runJob.php"; } | crontab -    
+RUN crontab -l | { cat; echo "* * * * * php /var/www/html/runJob.php > /dev/null 2>&1"; } | crontab -    
 
 USER nobody

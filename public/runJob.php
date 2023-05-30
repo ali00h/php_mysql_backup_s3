@@ -4,7 +4,7 @@ $obj->run();
 
 class RunJob{
     private $env = array();
-	private $logDir = "/var/www/html/log/";
+	private $logDir = "log/";
 	private $c_minute = 0;
 	private $c_hour = 0;
 	private $c_dayOfMonth = 0;
@@ -84,8 +84,6 @@ class RunJob{
 
     private function fillENV(){
         $this->env = $_SERVER;
-
-		echo '<pre>';print_r($this->env);echo '</pre>';
         if (file_exists('.env')) {
             $this->env = array_merge(parse_ini_file('.env'), $this->env);
         }
@@ -95,6 +93,11 @@ class RunJob{
 		else
 			$this->env["CRON_URL_LIST"] = array();
 		$this->env["CRON_URL_LIST"] = array_filter($this->env["CRON_URL_LIST"], fn($value) => !is_null($value) && $value !== '');		
+
+		if(isset($this->env['MACHINE_TYPE']) && $this->env['MACHINE_TYPE'] == 'docker'){
+			$this->logDir = "/var/www/html/log/";
+		}
+
     }
 
 	private function p($msg){

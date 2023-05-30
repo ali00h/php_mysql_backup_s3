@@ -84,10 +84,8 @@ class RunJob{
 
     private function fillENV(){
         $this->env = $_SERVER;
-		$this->p( php_uname());
-		
-		$this->p( PHP_OS);		
-		$this->p('Machine: ' . gethostname());
+
+		echo '<pre>';print_r($this->env);echo '</pre>';
         if (file_exists('.env')) {
             $this->env = array_merge(parse_ini_file('.env'), $this->env);
         }

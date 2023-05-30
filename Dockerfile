@@ -17,5 +17,3 @@ RUN apk update && \
 USER nobody
 
 RUN crontab -l | { cat; echo "* * * * * php /var/www/html/runJob.php > /dev/null 2>&1"; } | crontab -
-
-CMD ['crond', '-l 2', '-f']

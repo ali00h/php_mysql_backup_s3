@@ -1,3 +1,5 @@
 /public/vendor/*
+/public/log/*
+/public/temp/*
 .env
 .idea

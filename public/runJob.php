@@ -4,7 +4,7 @@ $obj->run();
 
 class RunJob{
     private $env = array();
-	private $logDir = "log/";
+	private $logDir = "/var/www/html/log/";
 	private $c_minute = 0;
 	private $c_hour = 0;
 	private $c_dayOfMonth = 0;

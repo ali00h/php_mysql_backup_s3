@@ -10,13 +10,10 @@ COPY --from=builder /var/www/html/ /var/www/html/
 ENV MACHINE_TYPE=docker
 USER root
 RUN apk update && \
-    apk add --update busybox-openrc && \
-    apk add --update busybox-suid && \
     apk add --no-cache php81-mysqli && \
     apk add --no-cache php81-simplexml && \
     apk add --no-cache mysql-client
 
-RUN crontab -l | { cat; echo "* * * * * php /var/www/html/runJob.php > /dev/null 2>&1"; } | crontab -    
 
 USER nobody
 

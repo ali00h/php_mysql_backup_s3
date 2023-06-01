@@ -20,9 +20,8 @@ services:
       - AWS_Region=
       - AWS_BACKUP_DIRECTORY=dbbackup/mysql/
       - AWS_MAX_BACKUP_COUNT_FOR_EACH_DB=30
-      - TIME_ZONE=Asia/Tehran
+      - TIME_ZONE=UTC
       - BACKUP_URL_SecretKey=123
-      - CRON_URL_LIST=* * * * * https://example-files.online-convert.com/document/txt/example.txt
     networks:
       - pmbnetwork
 
